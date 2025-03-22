@@ -1,6 +1,30 @@
 using Finance_Monitor.Components;
+using Finance_Monitor.Data;
+using Finance_Monitor.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configures the DbContextFactory for the ApplicationUserContext with a SQL Server connection string from the app settings.
+builder.Services.AddDbContextFactory<ApplicationUserContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection") ??
+        throw new InvalidOperationException(
+            "Connection string 'DefaultConnection' not found.")));
+
+// Configures authentication schemes and identity cookies for user sign-in.
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+}).AddIdentityCookies();
+
+// Configures Identity with required account confirmation, EF Core stores, sign-in manager, and token providers.
+builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<ApplicationUserContext>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
