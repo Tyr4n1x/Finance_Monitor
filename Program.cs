@@ -15,6 +15,9 @@ builder.Services.AddDbContextFactory<ApplicationUserContext>(options =>
         throw new InvalidOperationException(
             "Connection string 'DefaultConnection' not found.")));
 
+// Enables database-related exception pages during development to assist with troubleshooting Entity Framework Core issues
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
 // Configures authentication schemes and identity cookies for user sign-in.
 builder.Services.AddAuthentication(options =>
 {
@@ -61,6 +64,7 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+// Add additional endpoints required by the Identity Razor components (/Account)
 app.MapAdditionalIdentityEndpoints();;
 
 app.Run();
