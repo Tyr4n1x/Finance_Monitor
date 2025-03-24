@@ -19,11 +19,29 @@
     <div class="col-md-6">
         <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
             <div class="form-floating mb-3">
-                <input type="text" value="@username" class="form-control" placeholder="Please choose your username." disabled />
+                <input type="text" value="@name" class="form-control" placeholder="Cannot modify your name." disabled />
+                <label for="name" class="form-label">Name</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="text" value="@firstName" class="form-control" placeholder="Cannot modify your first name." disabled />
+                <label for="firstname" class="form-label">First Name</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="text" value="@username" class="form-control" placeholder="Cannot modify your username." disabled />
                 <label for="username" class="form-label">Username</label>
             </div>
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Email" class="form-control" placeholder="Please enter your email." />
+                <label for="email" class="form-label">Email</label>
+                <ValidationMessage For="() => Input.Email" class="text-danger" />
+            </div>
+            @if (Input.Email != null & !emailConfirmed)
+            {
+                <div class="alert alert-warning" role="alert">
+                    <p>Your email address has not been confirmed. Please check your email for a confirmation link.</p>
+                </div>
+            }
             <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.PhoneNumber" class="form-control" placeholder="Please enter your phone number." />
                 <label for="phone-number" class="form-label">Phone number</label>
@@ -36,7 +54,11 @@
 
 @code {
     private ApplicationUser user = default!;
+    private string? name;
+    private string? firstName;
     private string? username;
+    private string? email;
+    private bool emailConfirmed;
     private string? phoneNumber;
 
     [CascadingParameter]
@@ -48,10 +70,16 @@
     protected override async Task OnInitializedAsync()
     {
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+
+        name = user.Name;
+        firstName = user.FirstName;
         username = await UserManager.GetUserNameAsync(user);
+        email = await UserManager.GetEmailAsync(user);
+        emailConfirmed = await UserManager.IsEmailConfirmedAsync(user);
         phoneNumber = await UserManager.GetPhoneNumberAsync(user);
 
         Input.PhoneNumber ??= phoneNumber;
+        Input.Email ??= email;
     }
 
     private async Task OnValidSubmitAsync()
@@ -65,6 +93,15 @@
             }
         }
 
+        if (Input.Email != email)
+        {
+            var setEmailResult = await UserManager.SetEmailAsync(user, Input.Email);
+            if (!setEmailResult.Succeeded)
+            {
+                RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set email.", HttpContext);
+            }
+        }
+
         await SignInManager.RefreshSignInAsync(user);
         RedirectManager.RedirectToCurrentPageWithStatus("Your profile has been updated", HttpContext);
     }
@@ -74,5 +111,9 @@
         [Phone]
         [Display(Name = "Phone number")]
         public string? PhoneNumber { get; set; }
+
+        [EmailAddress]
+        [Display(Name = "Email")]
+        public string? Email { get; set; }
     }
 }

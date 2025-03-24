@@ -6,6 +6,7 @@
 @using Finance_Monitor.Models
 @using Finance_Monitor.Data
 
+@inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
@@ -22,11 +23,10 @@
                 <DataAnnotationsValidator />
                 <h2>Use a local account to log in.</h2>
                 <hr />
-                <ValidationSummary class="text-danger" role="alert" />
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                    <label for="email" class="form-label">Email</label>
-                    <ValidationMessage For="() => Input.Email" class="text-danger" />
+                    <InputText @bind-Value="Input.UsernameEmail" class="form-control" autocomplete="username" aria-required="true" placeholder="" />
+                    <label for="username-email" class="form-label">Username or Email</label>
+                    <ValidationMessage For="() => Input.UsernameEmail" class="text-danger" />
                 </div>
                 <div class="form-floating mb-3">
                     <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
@@ -88,9 +88,24 @@
 
     public async Task LoginUser()
     {
+        // First check if the provided entry matches a username
+        var user = await UserManager.FindByNameAsync(Input.UsernameEmail);
+
+        // If the entry doesn't match a username, check if it matches an email
+        if (user == null)
+        {
+            user = await UserManager.FindByEmailAsync(Input.UsernameEmail);
+
+            if (user == null)
+            {
+                errorMessage = "Error: Invalid login attempt.";
+                return;
+            }
+        }
+
         // This doesn't count login failures towards account lockout
         // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        var result = await SignInManager.PasswordSignInAsync(user, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");
@@ -116,8 +131,7 @@
     private sealed class InputModel
     {
         [Required]
-        [EmailAddress]
-        public string Email { get; set; } = "";
+        public string UsernameEmail { get; set; } = "";
 
         [Required]
         [DataType(DataType.Password)]
