@@ -27,7 +27,6 @@ builder.Services.AddAuthentication(options =>
 
 // Configures Identity with required account confirmation, EF Core stores, sign-in manager, and token providers.
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationUserContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
