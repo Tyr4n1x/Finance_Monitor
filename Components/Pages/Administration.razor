@@ -1,0 +1,70 @@
+﻿@page "/Administration"
+
+@using Finance_Monitor.Models
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Identity;
+
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IConfiguration Configuration
+
+<h3>Administration</h3>
+
+<AuthorizeView>
+    <Authorized>
+        @if (IsUserAdmin)
+        {
+            <p>You are authorized as Administrator.</p>
+        }
+        else
+        {
+            <p>You are not authorized to view this page.</p>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <p>Please log in first.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    string AdministratorRole = "Administrator";
+    bool IsUserAdmin = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        // Retrieve the Admin Username from Configuration
+        string adminUsername = Configuration["AdminCredentials:Username"] ?? "";
+
+        // Ensure there is a Administrator Role
+        var RoleResult = await RoleManager.FindByNameAsync(AdministratorRole);
+        if (RoleResult == null)
+        {
+            // Create Administrator Role
+            await RoleManager.CreateAsync(new IdentityRole(AdministratorRole));
+        }
+
+        // Ensure the default Administrator is an Administrator
+        var user = await UserManager.FindByNameAsync(adminUsername);
+        if (user != null)
+        {
+            // Is Tyr4n1x already an Administrator?
+            var UserResult = await UserManager.IsInRoleAsync(user, AdministratorRole);
+            if (!UserResult)
+            {
+                // Make Tyr4n1x an Administrator
+                await UserManager.AddToRoleAsync(user, AdministratorRole);
+            }
+        }
+
+        // Get the current logged in user
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authenticationState.User;
+        if (currentUser.Identity?.IsAuthenticated ?? false)
+        {
+            IsUserAdmin = currentUser.IsInRole(AdministratorRole);
+        }
+    }
+}
