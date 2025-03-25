@@ -12,6 +12,7 @@
 @inject IUserStore<ApplicationUser> UserStore
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IEmailSender<ApplicationUser> EmailSender
+@inject RoleManager<IdentityRole> RoleManager
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
@@ -75,6 +76,9 @@
 </div>
 
 @code {
+
+    string UserRole = "User";
+
     private IEnumerable<IdentityError>? identityErrors;
 
     [SupplyParameterFromForm]
@@ -84,6 +88,17 @@
     private string? ReturnUrl { get; set; }
 
     private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Ensure there is a User Role
+        var RoleResult = await RoleManager.FindByNameAsync(UserRole);
+        if (RoleResult == null)
+        {
+            // Create User Role
+            await RoleManager.CreateAsync(new IdentityRole(UserRole));
+        }
+    }
 
     public async Task RegisterUser(EditContext editContext)
     {
@@ -117,6 +132,9 @@
         }
 
         Logger.LogInformation("User created a new account with password.");
+
+        // Attribute the User Role to the newly defined user
+        await UserManager.AddToRoleAsync(user, UserRole);
 
         var userId = await UserManager.GetUserIdAsync(user);
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
