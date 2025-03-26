@@ -1,5 +1,7 @@
 ﻿@page "/Administration"
 
+@rendermode InteractiveServer
+
 @using Finance_Monitor.Models
 @using Microsoft.AspNetCore.Authorization;
 @using Microsoft.AspNetCore.Identity;
@@ -13,7 +15,7 @@
 <AuthorizeView Roles="Administrator">
     <Authorized>
         <h3>Administration</h3>
-        <p>You are authorized as Administrator.</p>
+        <UserGrid />
     </Authorized>
     <NotAuthorized>
         <p>You are not authorized to view this page.</p>

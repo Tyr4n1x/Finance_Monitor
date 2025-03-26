@@ -18,6 +18,9 @@ builder.Services.AddDbContextFactory<ApplicationUserContext>(options =>
 // Enables database-related exception pages during development to assist with troubleshooting Entity Framework Core issues
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+
+builder.Services.AddQuickGridEntityFrameworkAdapter();
+
 // Configures authentication schemes and identity cookies for user sign-in.
 builder.Services.AddAuthentication(options =>
 {

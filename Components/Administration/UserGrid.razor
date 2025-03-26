@@ -1,0 +1,106 @@
+﻿@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Finance_Monitor.Models
+@using Finance_Monitor.Data
+
+@implements IAsyncDisposable
+
+@inject IDbContextFactory<ApplicationUserContext> DbFactory
+
+<div class="user-grid">
+    <QuickGrid Class="table" Items="@FilteredUsers" Virtualize="true">
+        <PropertyColumn Property="User => User.UserName" Sortable="true" InitialSortDirection="SortDirection.Ascending" IsDefaultSortColumn="true" >
+            <ColumnOptions>
+                <div class="search-box">
+                    <input type="search" @bind="UserNameFilter" @bind:event="oninput" placeholder="username" />
+                </div>
+            </ColumnOptions>
+        </PropertyColumn>
+        <PropertyColumn Property="User => User.Email">
+            <ColumnOptions>
+                <div class="search-box">
+                    <input type="search" @bind="EmailFilter" @bind:event="oninput" placeholder="email" />
+                </div>
+            </ColumnOptions>
+        </PropertyColumn>
+        <PropertyColumn Property="User => User.Name" Sortable="true">
+            <ColumnOptions>
+                <div class="search-box">
+                    <input type="search" autofocus @bind="NameFilter" @bind:event="oninput" placeholder="name" />
+                </div>
+            </ColumnOptions>
+        </PropertyColumn>
+        <PropertyColumn Property="User => User.FirstName">
+            <ColumnOptions>
+                <div class="search-box">
+                    <input type="search" @bind="FirstNameFilter" @bind:event="oninput" placeholder="first name" />
+                </div>
+            </ColumnOptions>
+        </PropertyColumn>
+
+        <TemplateColumn Context="User">
+            <button class="btn btn-primary" @onclick="() => EditUser(User.Id)">Edit</button>
+            <button class="btn btn-danger" @onclick="() => DeleteUser(User.Id)">Delete</button>
+        </TemplateColumn>
+    </QuickGrid>
+</div>
+
+@code {
+    private ApplicationUserContext context = default!;
+
+    private string UserNameFilter = string.Empty;
+    private string EmailFilter = string.Empty;
+    private string NameFilter = string.Empty;
+    private string FirstNameFilter = string.Empty;
+
+    IQueryable<ApplicationUser> FilteredUsers
+    {
+        get
+        {
+            var result = context.Users.AsQueryable();
+
+            if (!string.IsNullOrEmpty(UserNameFilter))
+            {
+                // The LINQ needs to be translated to SQL, so no arguments of type StringComparison are allowed for .Contains
+                result = result.Where(e => e.UserName != null && e.UserName.Contains(UserNameFilter));
+            }
+
+            if (!string.IsNullOrEmpty(EmailFilter))
+            {
+                // The LINQ needs to be translated to SQL, so no arguments of type StringComparison are allowed for .Contains
+                result = result.Where(e => e.Email != null && e.Email.Contains(EmailFilter));
+            }
+
+            if (!string.IsNullOrEmpty(NameFilter))
+            {
+                // The LINQ needs to be translated to SQL, so no arguments of type StringComparison are allowed for .Contains
+                result = result.Where(e => e.Name != null && e.Name.Contains(NameFilter));
+            }
+
+            if (!string.IsNullOrEmpty(FirstNameFilter))
+            {
+                // The LINQ needs to be translated to SQL, so no arguments of type StringComparison are allowed for .Contains
+                result = result.Where(e => e.FirstName != null && e.FirstName.Contains(FirstNameFilter));
+            }
+
+            return result;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+
+    private void EditUser(string userId)
+    {
+        // Implement edit logic here
+    }
+
+    private void DeleteUser(string userId)
+    {
+        // Implement delete logic here
+    }
+}
