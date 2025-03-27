@@ -1,0 +1,55 @@
+﻿@using Finance_Monitor.Models
+
+@if (ShowDialog)
+{
+    <div class="modal fade show d-block" id="confirmDialog" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@DialogTitle</h5>
+                </div>
+                <div class="modal-body">
+                    @DialogMessage
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            @onclick="() => OnDialogAction(false)">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary"
+                            @onclick="() => OnDialogAction(true)">
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool ShowDialog { get; set; }
+
+    [Parameter]
+    public ApplicationUser? DialogUser { get; set; }
+
+    [Parameter]
+    public string DialogTitle { get; set; } = "Confirm Action";
+
+    [Parameter]
+    public string DialogMessage { get; set; } = "Are you sure you want to proceed?";
+
+    [Parameter]
+    public EventCallback<bool> DialogAction { get; set; }
+
+    public void Show()
+    {
+        ShowDialog = true;
+        StateHasChanged();
+    }
+
+    private async Task OnDialogAction(bool value)
+    {
+        ShowDialog = false;
+        await DialogAction.InvokeAsync(value);
+    }
+}
