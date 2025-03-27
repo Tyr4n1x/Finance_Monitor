@@ -1,11 +1,14 @@
-﻿@using Microsoft.EntityFrameworkCore
+﻿@using Finance_Monitor.Components.Shared
+@using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using Finance_Monitor.Models
 @using Finance_Monitor.Data
+@using Microsoft.AspNetCore.Identity;
 
 @implements IAsyncDisposable
 
 @inject IDbContextFactory<ApplicationUserContext> DbFactory
+@inject UserManager<ApplicationUser> UserManager
 
 <div class="user-grid">
     <QuickGrid Class="table" Items="@FilteredUsers" Virtualize="true">
@@ -40,10 +43,17 @@
 
         <TemplateColumn Context="User">
             <button class="btn btn-primary" @onclick="() => EditUser(User.Id)">Edit</button>
-            <button class="btn btn-danger" @onclick="() => DeleteUser(User.Id)">Delete</button>
+            <button class="btn btn-danger" @onclick="() => DeleteUser(User)">Delete</button>
         </TemplateColumn>
     </QuickGrid>
 </div>
+
+<DialogComponent @ref="ConfirmationDialog"
+                DialogUser=@dialogUser
+                DialogTitle="Delete User"
+                DialogMessage=@confirmationMessage
+                DialogAction="DeleteUserConfirmed">
+</DialogComponent>
 
 @code {
     private ApplicationUserContext context = default!;
@@ -52,6 +62,10 @@
     private string EmailFilter = string.Empty;
     private string NameFilter = string.Empty;
     private string FirstNameFilter = string.Empty;
+
+    private DialogComponent? ConfirmationDialog;
+    private ApplicationUser? dialogUser;
+    private string? confirmationMessage;
 
     IQueryable<ApplicationUser> FilteredUsers
     {
@@ -99,8 +113,26 @@
         // Implement edit logic here
     }
 
-    private void DeleteUser(string userId)
+    private void DeleteUser(ApplicationUser user)
     {
-        // Implement delete logic here
+        dialogUser = user;
+        confirmationMessage = $"Are you sure you want to delete user {user.UserName}?";
+        ConfirmationDialog?.Show();
+    }
+
+    private async Task DeleteUserConfirmed(bool confirmed)
+    {
+        var user = ConfirmationDialog?.DialogUser; // Retrieve the user from the dialog
+        if (confirmed && user != null)
+        {
+            // Delete the user
+            await UserManager.DeleteAsync(user);
+
+            // Refresh the data by reloading the context
+            context = await DbFactory.CreateDbContextAsync();
+
+            // Trigger UI refresh
+            StateHasChanged();
+        }
     }
 }
