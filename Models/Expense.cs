@@ -24,20 +24,20 @@ namespace Finance_Monitor.Models
         public decimal Amount { get; set; }
 
         [Required]
-        public List<ExpenseCategory> Categories { get; set; } = new List<ExpenseCategory>();
+        public List<string> Categories { get; set; } = new List<string>();
 
     }
 
     // Placeholder for testing purposes, should be replaced with a customizable solution
-    public enum ExpenseCategory
-    {
-        Groceries,
-        Laundry,
-        Transport,
-        Food,
-        Sports,
-        Subscription,
-    }
+    //public enum ExpenseCategory
+    //{
+    //    Groceries,
+    //    Laundry,
+    //    Transport,
+    //    Food,
+    //    Sports,
+    //    Subscription,
+    //}
 }
 
 

@@ -9,7 +9,8 @@ namespace Finance_Monitor.Data
         {
         }
 
-        public DbSet<Expense> Expense { get; set; } = default!;
+        public DbSet<Expense> Expenses { get; set; } = default!;
+        public DbSet<ExpenseCategory> ExpenseCategories { get; set; } = default!;
     }
    
 }
