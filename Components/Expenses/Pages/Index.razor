@@ -1,0 +1,27 @@
+﻿@page "/expenses"
+@rendermode InteractiveServer
+
+<PageTitle>Expenses - Finance Monitor</PageTitle>
+
+<div class="row">
+    <div class="col-lg-9">
+        <div id="expenses-table" class="card">
+            <div class="card-header">
+                Expenses
+            </div>
+            <div class="card-body">
+                <ExpenseGrid></ExpenseGrid>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div id="expenses-form" class="card">
+            <div class="card-header">
+                Add an expense
+            </div>
+            <div class="card-body">
+                 <ExpenseForm></ExpenseForm>
+            </div>
+        </div>
+    </div>
+</div>
