@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Finance_Monitor.Components.Account;
 using Microsoft.AspNetCore.Components.Authorization;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,6 +62,9 @@ builder.Services.Configure<IdentityOptions>(options =>
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Add Radzen services to the container.
+builder.Services.AddRadzenComponents();
 
 builder.Services.AddCascadingAuthenticationState();
 
