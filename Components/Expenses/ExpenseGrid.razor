@@ -1,0 +1,94 @@
+﻿@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Finance_Monitor.Models
+@using Finance_Monitor.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<ExpenseContext> DbFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+    
+<div class="expense-grid">
+    <QuickGrid Class="table" Items="@FilteredExpenses" Virtualize="true">
+        <PropertyColumn Property="expense => expense.Date" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn="true" />
+        <PropertyColumn Property="expense => expense.Amount" Format="C">
+            <ColumnOptions>
+                <p>Min: <input type="search" @bind="MinAmount" @bind:event="oninput" placeholder="minimum" /> </p>
+                <p>Max: <input type="search" @bind="MaxAmount" @bind:event="oninput" placeholder="maximum" /> </p>
+            </ColumnOptions>
+        </PropertyColumn>
+        <PropertyColumn Property="expense => expense.Description">
+            <ColumnOptions>
+                <div class="search-box">
+                    <input type="search" autofocus @bind="DescriptionFilter" @bind:event="oninput" placeholder="description" />
+                </div>
+            </ColumnOptions>
+        </PropertyColumn>
+        <TemplateColumn Context="expense">
+            @string.Join(", ", expense.Categories)
+        </TemplateColumn>
+
+        <TemplateColumn Context="expense">
+            <a href="@($"expenses/edit?id={expense.Id}")"       class="btn btn-primary"     >   Edit    </a>
+            <a href="@($"expenses/details?id={expense.Id}")"    class="btn btn-primary"     >   Details </a>
+            <a href="@($"expenses/delete?id={expense.Id}")"     class="btn btn-danger"      >   Delete  </a>
+        </TemplateColumn>
+    </QuickGrid>
+</div>
+
+@code {
+    private ExpenseContext context = default!;
+
+    private string DescriptionFilter = string.Empty;
+    private int? MinAmount;
+    private int? MaxAmount;
+
+    private string userId = string.Empty;
+
+    IQueryable<Expense> FilteredExpenses
+    {
+        get
+        {
+            var result = context.Expenses.AsQueryable();
+
+            // Filter by current user's UserId
+            if (!string.IsNullOrEmpty(userId))
+            {
+                result = result.Where(e => e.UserId == userId);
+            }
+            else
+            {
+                result = Enumerable.Empty<Expense>().AsQueryable(); // Empty queryable collection
+            }
+
+            if (MinAmount.HasValue)
+            {
+                result = result.Where(e => e.Amount >= MinAmount.Value);
+            }
+
+            if (MaxAmount.HasValue)
+            {
+                result = result.Where(e => e.Amount <= MaxAmount.Value);
+            }
+
+            if (!string.IsNullOrEmpty(DescriptionFilter))
+            {
+                // The LINQ needs to be translated to SQL, so no arguments of type StringComparison are allowed for .Contains
+                result = result.Where(e => e.Description.Contains(DescriptionFilter));
+            }
+
+            return result;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the current user's UserId
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authenticationState.User;
+        userId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value ?? string.Empty;
+
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}
