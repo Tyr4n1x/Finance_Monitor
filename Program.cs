@@ -23,6 +23,15 @@ builder.Services.AddDbContextFactory<ExpenseContext>(options =>
         throw new InvalidOperationException(
             "Connection string 'DefaultConnection' not found.")));
 
+
+// Configures the DbContextFactory for the IncomeContext with a SQL Server connection string from the app settings.
+builder.Services.AddDbContextFactory<IncomeContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection") ??
+        throw new InvalidOperationException(
+            "Connection string 'DefaultConnection' not found.")));
+
+
 // Enables database-related exception pages during development to assist with troubleshooting Entity Framework Core issues
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
