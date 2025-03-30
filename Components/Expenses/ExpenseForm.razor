@@ -1,0 +1,95 @@
+﻿@using Microsoft.EntityFrameworkCore
+@using Finance_Monitor.Models
+@using Finance_Monitor.Data
+@inject IDbContextFactory<ExpenseContext> DbFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="expense-form">
+    <EditForm method="post" Model="Expense" OnSubmit="AddExpense" FormName="create" Enhance>
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label for="description" class="form-label">Description:</label>
+            <InputText id="description" @bind-Value="Expense.Description" class="form-control" aria-required="true" />
+            <ValidationMessage For="() => Expense.Description" class="text-danger" />
+        </div>
+        <div class="mb-3">
+            <label for="date" class="form-label">Date:</label>
+            <InputDate id="date" @bind-Value="Expense.Date" class="form-control" aria-required="true" />
+            <ValidationMessage For="() => Expense.Date" class="text-danger" />
+        </div>
+        <div class="mb-3">
+            <label for="amount" class="form-label">Amount:</label>
+            <RadzenNumeric id="amount" @bind-Value="Expense.Amount" class="form-control" Format="c" />
+            <ValidationMessage For="() => Expense.Amount" class="text-danger" />
+        </div>
+        <div class="mb-3">
+            <label for="categories" class="form-label">Categories:</label>
+            <RadzenDropDown @bind-Value=@selectedCategories
+                Data=@Categories
+                Name="ExpenseCategories"
+                MaxSelectedLabels="3"
+                SelectedItemsText="categories selected"
+                Multiple=true
+                AllowFiltering="true"
+                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                AllowClear=true
+                Placeholder="Select categories"
+                Chips=true />
+            <ValidationMessage For="() => Expense.Categories" class="text-danger" />
+        </div>
+        <button type="submit" class="btn btn-primary">Create</button>
+    </EditForm>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Expense Expense { get; set; } = new() { Date = DateOnly.FromDateTime(DateTime.Today) };
+
+    private List<string> selectedCategories = new List<string>();
+    private List<string> Categories = new List<string>();
+
+    // Inject AuthenticationStateProvider
+    private AuthenticationState authenticationState = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the current user's UserId
+        authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authenticationState.User;
+        string? userId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+
+        // Set the current user's UserId in the Expense
+        if (!string.IsNullOrEmpty(userId))
+        {
+            Expense.UserId = userId;
+        }
+
+        using var context = DbFactory.CreateDbContext();
+
+        // Fetch categories for the current user from the ExpenseCategories table
+        Categories = await context.ExpenseCategories
+                                  .Where(c => c.UserId == userId)
+                                  .Select(c => c.Category)
+                                  .ToListAsync();
+
+    }
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddExpense()
+    {
+
+        // Set the selected categories in the Expense object
+        Expense.Categories = selectedCategories;
+
+        using var context = DbFactory.CreateDbContext();
+        context.Expenses.Add(Expense);
+        await context.SaveChangesAsync();
+
+        // Reset the form by creating a new Expense object
+        Expense = new Expense() { Date = DateOnly.FromDateTime(DateTime.Today) };
+        selectedCategories = []; // Clear selected categories
+
+        // Trigger UI refresh
+        StateHasChanged();
+    }
+}
