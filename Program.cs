@@ -15,10 +15,18 @@ builder.Services.AddDbContextFactory<ApplicationUserContext>(options =>
         throw new InvalidOperationException(
             "Connection string 'DefaultConnection' not found.")));
 
+
+// Configures the DbContextFactory for the ExpenseContext with a SQL Server connection string from the app settings.
+builder.Services.AddDbContextFactory<ExpenseContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection") ??
+        throw new InvalidOperationException(
+            "Connection string 'DefaultConnection' not found.")));
+
 // Enables database-related exception pages during development to assist with troubleshooting Entity Framework Core issues
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-
+// Adds the QuickGrid Entity Framework adapter to the service collection
 builder.Services.AddQuickGridEntityFrameworkAdapter();
 
 // Configures authentication schemes and identity cookies for user sign-in.
