@@ -1,0 +1,83 @@
+﻿/* Fix height and enable scrolling */
+.expense-grid {
+    height: calc(100vh - 150px);
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Set the width of the scrollbar */
+.expense-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+/* Style the scrollbar thumb */
+.expense-grid::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+}
+
+/* Style the scrollbar track */
+.expense-grid::-webkit-scrollbar-track {
+    background: transparent;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+::deep table {
+    width: 100%; /* Ensure table spans the full width */
+    table-layout: fixed; /* Ensures consistent column widths */
+}
+
+
+/* Apply fixed widths to specific columns */
+::deep thead th:nth-child(1),
+::deep tbody td:nth-child(1) {
+    width: 10%;
+}
+
+::deep thead th:nth-child(2),
+::deep tbody td:nth-child(2) {
+    width: 10%;
+}
+
+::deep thead th:nth-child(3),
+::deep tbody td:nth-child(3) {
+    width: 25%;
+}
+
+::deep thead th:nth-child(4),
+::deep tbody td:nth-child(4) {
+    width: 15%
+}
+
+::deep thead th:nth-child(5),
+::deep tbody td:nth-child(5) {
+    width: 25%;
+    text-align: center;
+}
+
+/* Sticky header while scrolling */
+::deep thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    vertical-align: middle;
+}
+
+/* Header color and borders */
+::deep thead th {
+    background-color: rgb(247,247,247);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.175);
+}
+
+::deep tr {
+    height: 30px; /* For virtualized grids, it's essential that all rows have the same known height */
+}
+
+::deep tbody td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+
