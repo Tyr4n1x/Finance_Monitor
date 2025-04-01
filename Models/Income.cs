@@ -24,7 +24,7 @@ namespace Finance_Monitor.Models
         public decimal Amount { get; set; }
 
         [Required]
-        public List<IncomeCategory> Categories { get; set; } = new List<IncomeCategory>();
+        public List<string> Categories { get; set; } = new List<string>();
 
     }
 }

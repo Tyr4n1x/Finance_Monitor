@@ -9,7 +9,8 @@ namespace Finance_Monitor.Data
         {
         }
 
-        public DbSet<Income> Income { get; set; } = default!;
+        public DbSet<Income> Incomes { get; set; } = default!;
+        public DbSet<IncomeCategory> IncomeCategories { get; set; } = default!;
     }
 
 }
