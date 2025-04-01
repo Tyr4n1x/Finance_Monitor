@@ -1,23 +1,23 @@
 ﻿/* Fix height and enable scrolling */
-.expense-grid {
+.income-grid {
     height: calc(100vh - 150px);
     overflow-y: auto;
     padding-right: 10px;
 }
 
 /* Set the width of the scrollbar */
-.expense-grid::-webkit-scrollbar {
+.income-grid::-webkit-scrollbar {
     width: 8px;
 }
 
 /* Style the scrollbar thumb */
-.expense-grid::-webkit-scrollbar-thumb {
+.income-grid::-webkit-scrollbar-thumb {
     background-color: #ccc;
     border-radius: 4px;
 }
 
 /* Style the scrollbar track */
-.expense-grid::-webkit-scrollbar-track {
+.income-grid::-webkit-scrollbar-track {
     background: transparent;
     margin-top: 5px;
     margin-bottom: 5px;
