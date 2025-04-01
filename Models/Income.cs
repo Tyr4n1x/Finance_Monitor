@@ -27,17 +27,6 @@ namespace Finance_Monitor.Models
         public List<IncomeCategory> Categories { get; set; } = new List<IncomeCategory>();
 
     }
-
-    // Placeholder for testing purposes, should be replaced with a customizable solution
-    public enum IncomeCategory
-    {
-        Salary,
-        CapitalGain,
-        Freelancing,
-        Coaching,
-        Flipping,
-        Gift,
-    }
 }
 
 
