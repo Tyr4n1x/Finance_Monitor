@@ -1,0 +1,27 @@
+﻿@page "/incomes"
+@rendermode InteractiveServer
+
+<PageTitle>Incomes - Finance Monitor</PageTitle>
+
+<div class="row">
+    <div class="col-lg-9">
+        <div id="incomes-table" class="card">
+            <div class="card-header">
+                Incomes
+            </div>
+            <div class="card-body">
+                <IncomeGrid></IncomeGrid>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div id="incomes-form" class="card">
+            <div class="card-header">
+                Add an income
+            </div>
+            <div class="card-body">
+                 <IncomeForm></IncomeForm>
+            </div>
+        </div>
+    </div>
+</div>
