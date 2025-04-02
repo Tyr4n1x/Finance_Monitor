@@ -1,0 +1,59 @@
+﻿@using System.Globalization
+@using Finance_Monitor.Services
+@inject IDataService dataService;
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="bar-chart">
+    @if (yearlyExpenses is null || yearlyIncomes is null)
+    {
+        <p>Loading data...</p>
+    }
+    else if (!yearlyExpenses.Any() && !yearlyIncomes.Any())
+    {
+        <p>No data available for the current year.</p>
+    }
+    else
+    {
+        <RadzenChart>
+            <RadzenColumnSeries Fill="#AACDBE"
+                                Data="@yearlyIncomes"
+                                CategoryProperty="Month"
+                                ValueProperty="Amount"
+                                Title="Incomes"/>
+            <RadzenColumnSeries Fill="#EA907A" Data="@yearlyExpenses" CategoryProperty="Month" ValueProperty="Amount" Title="Expenses" />
+            <RadzenColumnOptions Radius="5"  Width="20" />
+            <RadzenValueAxis Formatter="@FormatAsEUR">
+                <RadzenGridLines Visible="true" />
+                <RadzenAxisTitle Text="Amount in €" />
+            </RadzenValueAxis>
+        </RadzenChart>
+    }
+    
+</div>
+
+@code {
+
+    private ICollection<YearlyItem> yearlyExpenses = new List<YearlyItem>();
+    private ICollection<YearlyItem> yearlyIncomes = new List<YearlyItem>();
+
+    private string userId = string.Empty;
+
+    string FormatAsEUR(object value)
+    {
+        return ((double)value).ToString("C2", CultureInfo.CreateSpecificCulture("nl-BE"));
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the current user's UserId
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authenticationState.User;
+        userId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value ?? string.Empty;
+
+        yearlyExpenses = await dataService.LoadCurrentYearExpenses(userId) ?? new List<YearlyItem>();
+        yearlyIncomes = await dataService.LoadCurrentYearIncomes(userId) ?? new List<YearlyItem>();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+}
