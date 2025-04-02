@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Finance_Monitor.Components.Account;
 using Microsoft.AspNetCore.Components.Authorization;
 using Radzen;
+using Finance_Monitor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +76,9 @@ builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+// Add services for data processing to the container.
+builder.Services.AddScoped<IDataService, DataService>();
 
 var app = builder.Build();
 
