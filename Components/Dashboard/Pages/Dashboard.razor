@@ -1,7 +1,76 @@
 ﻿@page "/"
+@using Finance_Monitor.Components.Shared
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard - FinanceMonitor</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                @currentYear - Incomes and Expenses
+            </div>
+            <div class="card-body">
+                <BarChart></BarChart>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                @MonthToString(currentMonth, currentYear) - Incomes
+            </div>
+            <div class="card-body">
+                <PieChart ChartType="incomes" Colors="@colors"> </PieChart>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                @MonthToString(currentMonth, currentYear) - Expenses
+            </div>
+            <div class="card-body">
+                <PieChart ChartType="expenses" Colors="@colors"> </PieChart>
+            </div>
+        </div>
+    </div>
+</div>
 
-Welcome to your new app.
+@code {
+
+    private static int currentYear = DateTime.Today.Year;
+    private static int currentMonth = DateTime.Today.Month;
+
+    private ICollection<string> colors = new List<string>() {   "#FBC687", /* Warm Peach */
+                                                                "#F4F7C5", /* Soft Yellow */
+                                                                "#93ABD3", /* Cool Blue */
+                                                                "#E27396", /* Vibrant Pink */
+                                                                "#3A6351", /* Deep Green */
+                                                                "#6B4226"  /* Rich Brown */
+    };
+
+    private static string MonthToString(int month, int year)
+    {
+        return month switch
+        {
+            1 => $"January {year}",
+            2 => $"February {year}",
+            3 => $"March {year}",
+            4 => $"April {year}",
+            5 => $"May {year}",
+            6 => $"June {year}",
+            7 => $"July {year}",
+            8 => $"August {year}",
+            9 => $"September {year}",
+            10 => $"October {year}",
+            11 => $"November {year}",
+            12 => $"December {year}",
+            _ => throw new NotImplementedException(),
+        };
+    }
+
+}
+
