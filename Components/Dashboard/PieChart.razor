@@ -1,0 +1,54 @@
+﻿@using Finance_Monitor.Services
+@using System.Globalization
+@inject IDataService dataService;
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="pie-chart">
+    <RadzenChart>
+        <RadzenPieSeries Fills="@Colors"
+                         Data="@MonthData.Data"
+                         Title="@MonthData.Label"
+                         CategoryProperty="Category"
+                         ValueProperty="Amount" />
+    </RadzenChart>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string ChartType { get; set; } = "expenses";  // "incomes" or "expenses"
+
+    [Parameter]
+    public ICollection<string>? Colors { get; set; }
+
+    public MonthlyData MonthData { get; set; } = new MonthlyData();
+
+    private string userId = string.Empty;
+
+    string FormatAsEUR(object value)
+    {
+        return ((double)value).ToString("C2", CultureInfo.CreateSpecificCulture("nl-BE"));
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the current user's UserId
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authenticationState.User;
+        userId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value ?? string.Empty;
+
+        if (ChartType == "incomes")
+        {
+            MonthData = await dataService.LoadCurrentMonthIncomes(userId) ?? new MonthlyData();
+        }
+        else if (ChartType == "expenses")
+        {
+            MonthData = await dataService.LoadCurrentMonthExpenses(userId) ?? new MonthlyData();
+        }
+        else
+        {
+            throw new InvalidOperationException("Invalid ChartType");
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+}
