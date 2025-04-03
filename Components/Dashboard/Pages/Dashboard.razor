@@ -2,7 +2,7 @@
 @using Finance_Monitor.Components.Shared
 @rendermode InteractiveServer
 
-<PageTitle>Dashboard - FinanceMonitor</PageTitle>
+<PageTitle>Dashboard - Finance Monitor</PageTitle>
 
 <div class="row">
     <div class="col-lg-12">
@@ -10,21 +10,39 @@
             <div class="card-header">
                 @currentYear - Incomes and Expenses
             </div>
-            <div class="card-body">
-                <BarChart></BarChart>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="card-body">
+                        <BarChart></BarChart>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="card-body not-authorized">
+                        Please sign in or register to view your financial reports.
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 <div class="row">
     <div class="col-lg-6">
         <div class="card">
             <div class="card-header">
                 @MonthToString(currentMonth, currentYear) - Incomes
             </div>
-            <div class="card-body">
-                <PieChart ChartType="incomes" Colors="@colors"> </PieChart>
-            </div>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="card-body">
+                        <PieChart ChartType="incomes" Colors="@colors"> </PieChart>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="card-body not-authorized">
+                        Please sign in or register to view your financial reports.
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
     </div>
     <div class="col-lg-6">
@@ -32,9 +50,18 @@
             <div class="card-header">
                 @MonthToString(currentMonth, currentYear) - Expenses
             </div>
-            <div class="card-body">
-                <PieChart ChartType="expenses" Colors="@colors"> </PieChart>
-            </div>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="card-body">
+                        <PieChart ChartType="expenses" Colors="@colors"> </PieChart>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="card-body not-authorized">
+                        Please sign in or register to view your financial reports.
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
     </div>
 </div>

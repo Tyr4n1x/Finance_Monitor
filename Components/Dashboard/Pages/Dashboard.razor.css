@@ -1,0 +1,7 @@
+﻿.not-authorized {
+    height: 375px; /* Adjust as needed */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
