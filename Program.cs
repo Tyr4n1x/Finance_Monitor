@@ -80,6 +80,9 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 // Add services for data processing to the container.
 builder.Services.AddScoped<IDataService, DataService>();
 
+// Add services for emitting events to the container.
+builder.Services.AddSingleton<FinanceState>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
