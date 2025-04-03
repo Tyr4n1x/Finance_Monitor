@@ -2,9 +2,11 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using Finance_Monitor.Models
 @using Finance_Monitor.Data
+@using Finance_Monitor.Services
 @implements IAsyncDisposable
 @inject IDbContextFactory<IncomeContext> DbFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject FinanceState FinanceState
 
     
 <div class="income-grid">
@@ -80,6 +82,12 @@
         }
     }
 
+    private async Task RefreshGrid()
+    {
+        // Trigger a UI update when a new Expense is added
+        await InvokeAsync(StateHasChanged);
+    }
+
     protected override async Task OnInitializedAsync()
     {
         // Get the current user's UserId
@@ -88,7 +96,16 @@
         userId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value ?? string.Empty;
 
         context = DbFactory.CreateDbContext();
+
+        // Subscribe to the event
+        FinanceState.OnFinanceAdded += RefreshGrid;
     }
 
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+    public async ValueTask DisposeAsync()
+    {
+        await context.DisposeAsync();
+
+        // Unsubscribe from the event to prevent memory leaks
+        FinanceState.OnFinanceAdded -= RefreshGrid;
+    }
 }

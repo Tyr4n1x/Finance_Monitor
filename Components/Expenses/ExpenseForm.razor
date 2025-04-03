@@ -1,8 +1,10 @@
 ﻿@using Microsoft.EntityFrameworkCore
 @using Finance_Monitor.Models
 @using Finance_Monitor.Data
+@using Finance_Monitor.Services
 @inject IDbContextFactory<ExpenseContext> DbFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject FinanceState FinanceState
 
 <div class="expense-form">
     <EditForm method="post" Model="Expense" OnSubmit="AddExpense" FormName="create" Enhance>
@@ -88,6 +90,9 @@
         // Reset the form by creating a new Expense object
         Expense = new Expense() { Date = DateOnly.FromDateTime(DateTime.Today) };
         selectedCategories = []; // Clear selected categories
+
+        // Notify other components to update
+        await FinanceState.NotifyFinanceAdded();
 
         // Trigger UI refresh
         StateHasChanged();
