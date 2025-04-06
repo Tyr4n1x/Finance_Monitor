@@ -15,20 +15,32 @@
     else
     {
         <RadzenChart>
-            <RadzenColumnSeries Fill="#AACDBE"
-                                Data="@yearlyIncomes"
-                                CategoryProperty="Month"
-                                ValueProperty="Amount"
-                                Title="Incomes"/>
-            <RadzenColumnSeries Fill="#EA907A" Data="@yearlyExpenses" CategoryProperty="Month" ValueProperty="Amount" Title="Expenses" />
-            <RadzenColumnOptions Radius="5"  Width="20" />
-            <RadzenValueAxis Formatter="@FormatAsEUR">
+            <RadzenColumnSeries
+            Fill="#AACDBE"
+            Data="@yearlyIncomes"
+            CategoryProperty="Month"
+            ValueProperty="Amount"
+            Title="Incomes"/>
+            <RadzenColumnSeries
+            Fill="#EA907A"
+            Data="@yearlyExpenses"
+            CategoryProperty="Month"
+            ValueProperty="Amount"
+            Title="Expenses" />
+            <RadzenColumnOptions
+            Radius="5"
+            Width="30" />
+            <RadzenValueAxis
+            Formatter="@FormatAsEUR"
+            Min="@minAmount.ToString()"
+            Step="@step.ToString()"
+            Max="@maxAmount.ToString()">
                 <RadzenGridLines Visible="true" />
                 <RadzenAxisTitle Text="Amount in €" />
             </RadzenValueAxis>
         </RadzenChart>
     }
-    
+
 </div>
 
 @code {
@@ -37,6 +49,10 @@
     private ICollection<YearlyItem> yearlyIncomes = new List<YearlyItem>();
 
     private string userId = string.Empty;
+
+    private decimal minAmount;
+    private decimal maxAmount;
+    private decimal step;
 
     string FormatAsEUR(object value)
     {
@@ -52,6 +68,15 @@
 
         yearlyExpenses = await dataService.LoadCurrentYearExpenses(userId) ?? new List<YearlyItem>();
         yearlyIncomes = await dataService.LoadCurrentYearIncomes(userId) ?? new List<YearlyItem>();
+
+        minAmount = 0;
+        maxAmount = Math.Max(
+            yearlyExpenses.Any() ? yearlyExpenses.Max(expense => expense.Amount) : 0,
+            yearlyIncomes.Any() ? yearlyIncomes.Max(income => income.Amount) : 0
+        );
+        // Round up to the nearest hundred
+        maxAmount = Math.Ceiling(maxAmount / 100) * 100;
+        step = (maxAmount - minAmount)/5;
 
         await InvokeAsync(StateHasChanged);
     }
