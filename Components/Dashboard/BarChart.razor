@@ -4,11 +4,11 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <div class="bar-chart">
-    @if (yearlyExpenses is null || yearlyIncomes is null)
+    @if (!yearlyExpenses.Any() && !yearlyIncomes.Any())
     {
         <p>Loading data...</p>
     }
-    else if (!yearlyExpenses.Any() && !yearlyIncomes.Any())
+    else if (yearlyExpenses.All(expense => expense.Amount == 0) && yearlyIncomes.All(income => income.Amount == 0))
     {
         <p>No data available for the current year.</p>
     }
@@ -50,7 +50,7 @@
 
     private string userId = string.Empty;
 
-    private decimal minAmount;
+    private decimal minAmount = 0;
     private decimal maxAmount;
     private decimal step;
 
