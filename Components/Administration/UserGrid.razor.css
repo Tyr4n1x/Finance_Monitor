@@ -1,0 +1,53 @@
+﻿/* Fix height and enable scrolling */
+.user-grid {
+    height: calc(100vh - 150px);
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Set the width of the scrollbar */
+.user-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+/* Style the scrollbar thumb */
+.user-grid::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+}
+
+/* Style the scrollbar track */
+.user-grid::-webkit-scrollbar-track {
+    background: transparent;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+::deep table {
+    width: 100%; /* Ensure table spans the full width */
+    table-layout: fixed; /* Ensures consistent column widths */
+}
+
+/* Sticky header while scrolling */
+::deep thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    vertical-align: middle;
+}
+
+/* Header color and borders */
+::deep thead th {
+    background-color: rgb(247,247,247);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.175);
+}
+
+::deep tr {
+    height: 30px; /* For virtualized grids, it's essential that all rows have the same known height */
+}
+
+::deep tbody td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
