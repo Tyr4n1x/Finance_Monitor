@@ -40,7 +40,7 @@ else
                 </div>
                 <div class="mb-3">
                     <label for="categories" class="form-label">Categories:</label>
-                    <RadzenDropDown @bind-Value=@selectedCategories
+                    <RadzenDropDown @bind-Value="Expense.Categories"
                                     Data=@Categories
                                     Name="ExpenseCategories"
                                     MaxSelectedLabels="3"
@@ -102,11 +102,6 @@ else
     // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task UpdateExpense()
     {
-        if (Expense != null)
-        {
-            // Set the selected categories in the Expense object
-            Expense.Categories = selectedCategories;
-        }
         using var context = DbFactory.CreateDbContext();
         context.Attach(Expense!).State = EntityState.Modified;
 
