@@ -1,0 +1,52 @@
+﻿@page "/incomes/details"
+@using Microsoft.EntityFrameworkCore
+@using Finance_Monitor.Models
+@using Finance_Monitor.Data
+@inject IDbContextFactory<IncomeContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details of this Income</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <hr />
+    @if (income is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Description</dt>
+            <dd class="col-sm-10">@income.Description</dd>
+            <dt class="col-sm-2">Date</dt>
+            <dd class="col-sm-10">@income.Date</dd>
+            <dt class="col-sm-2">Amount</dt>
+            <dd class="col-sm-10">@income.Amount</dd>
+            <dt class="col-sm-2">Category</dt>
+            <dd class="col-sm-10">@string.Join(", ", income.Categories)</dd>
+        </dl>
+        <div>
+            <a href="@($"/incomes/edit?id={income.Id}")">Edit</a> |
+            <a href="@($"/incomes")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Income? income;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        income = await context.Incomes.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (income is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}
