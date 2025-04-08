@@ -4,6 +4,7 @@
 @using Finance_Monitor.Data
 @using Finance_Monitor.Services
 @implements IAsyncDisposable
+@inject NavigationManager NavigationManager
 @inject IDbContextFactory<IncomeContext> DbFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject FinanceState FinanceState
@@ -30,9 +31,15 @@
         </TemplateColumn>
 
         <TemplateColumn Context="income">
-            <a href="@($"incomes/edit?id={income.Id}")"       class="btn btn-primary"     >   Edit    </a>
-            <a href="@($"incomes/details?id={income.Id}")"    class="btn btn-primary"     >   Details </a>
-            <a href="@($"incomes/delete?id={income.Id}")"     class="btn btn-danger"      >   Delete  </a>
+            <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"incomes/edit?id={income.Id}"))">
+                Edit
+            </button>
+            <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"incomes/details?id={income.Id}"))">
+                Details
+            </button>
+            <button class="btn btn-danger" @onclick="@(() => NavigationManager.NavigateTo($"incomes/delete?id={income.Id}"))">
+                Delete
+            </button>
         </TemplateColumn>
     </QuickGrid>
 </div>
