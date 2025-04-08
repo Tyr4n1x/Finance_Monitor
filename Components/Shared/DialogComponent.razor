@@ -1,4 +1,5 @@
 ﻿@using Finance_Monitor.Models
+@typeparam TItem
 
 @if (ShowDialog)
 {
@@ -30,7 +31,7 @@
     private bool ShowDialog { get; set; }
 
     [Parameter]
-    public ApplicationUser? DialogUser { get; set; }
+    public TItem DialogItem { get; set; }
 
     [Parameter]
     public string DialogTitle { get; set; } = "Confirm Action";
