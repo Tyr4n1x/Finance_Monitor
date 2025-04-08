@@ -3,8 +3,10 @@
 @using Finance_Monitor.Models
 @using Finance_Monitor.Data
 @using Finance_Monitor.Services
+@using Finance_Monitor.Components.Shared
 @implements IAsyncDisposable
 @inject NavigationManager NavigationManager
+@inject DialogService DialogService
 @inject IDbContextFactory<ExpenseContext> DbFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject FinanceState FinanceState
@@ -37,12 +39,19 @@
             <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"expenses/details?id={expense.Id}"))">
                 Details
             </button>
-            <button class="btn btn-danger" @onclick="@(() => NavigationManager.NavigateTo($"expenses/delete?id={expense.Id}"))">
+            <button class="btn btn-danger" @onclick="() => DeleteExpense(expense)">
                 Delete
             </button>
         </TemplateColumn>
     </QuickGrid>
 </div>
+
+<DialogComponent @ref="ConfirmationDialog"
+DialogItem=@dialogExpense
+DialogTitle="Delete Expense"
+DialogMessage=@confirmationMessage
+DialogAction="DeleteExpenseConfirmed">
+</DialogComponent>
 
 @code {
     private ExpenseContext context = default!;
@@ -52,6 +61,10 @@
     private int? MaxAmount;
 
     private string userId = string.Empty;
+
+    private DialogComponent<Expense>? ConfirmationDialog;
+    private Expense? dialogExpense;
+    private string? confirmationMessage;
 
     IQueryable<Expense> FilteredExpenses
     {
@@ -114,5 +127,23 @@
 
         // Unsubscribe from the event to prevent memory leaks
         FinanceState.OnFinanceAdded -= RefreshGrid;
+    }
+
+    private void DeleteExpense(Expense expense)
+    {
+        dialogExpense = expense;
+        confirmationMessage = $"Are you sure you want to delete this expense: {expense.Description}?";
+        ConfirmationDialog?.Show();
+    }
+
+    private async Task DeleteExpenseConfirmed(bool confirmed)
+    {
+        var expense = ConfirmationDialog?.DialogItem; // Retrieve the expense from the dialog
+        if (confirmed && expense != null)
+        {
+            using var context = DbFactory.CreateDbContext();
+            context.Expenses.Remove(expense);
+            await context.SaveChangesAsync();
+        }
     }
 }
