@@ -6,7 +6,6 @@
 @using Finance_Monitor.Components.Shared
 @implements IAsyncDisposable
 @inject NavigationManager NavigationManager
-@inject DialogService DialogService
 @inject IDbContextFactory<ExpenseContext> DbFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject FinanceState FinanceState
@@ -47,10 +46,10 @@
 </div>
 
 <DialogComponent @ref="ConfirmationDialog"
-DialogItem=@dialogExpense
-DialogTitle="Delete Expense"
-DialogMessage=@confirmationMessage
-DialogAction="DeleteExpenseConfirmed">
+                DialogItem=@dialogExpense
+                DialogTitle="Delete Expense"
+                DialogMessage=@confirmationMessage
+                DialogAction="DeleteExpenseConfirmed">
 </DialogComponent>
 
 @code {

@@ -3,6 +3,7 @@
 @using Finance_Monitor.Models
 @using Finance_Monitor.Data
 @using Finance_Monitor.Services
+@using Finance_Monitor.Components.Shared
 @implements IAsyncDisposable
 @inject NavigationManager NavigationManager
 @inject IDbContextFactory<IncomeContext> DbFactory
@@ -37,12 +38,19 @@
             <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo($"incomes/details?id={income.Id}"))">
                 Details
             </button>
-            <button class="btn btn-danger" @onclick="@(() => NavigationManager.NavigateTo($"incomes/delete?id={income.Id}"))">
+            <button class="btn btn-danger" @onclick="() => DeleteIncome(income)">
                 Delete
             </button>
         </TemplateColumn>
     </QuickGrid>
 </div>
+
+<DialogComponent @ref="ConfirmationDialog"
+                 DialogItem=@dialogIncome
+                 DialogTitle="Delete Income"
+                 DialogMessage=@confirmationMessage
+                 DialogAction="DeleteIncomeConfirmed">
+</DialogComponent>
 
 @code {
     private IncomeContext context = default!;
@@ -52,6 +60,10 @@
     private int? MaxAmount;
 
     private string userId = string.Empty;
+
+    private DialogComponent<Income>? ConfirmationDialog;
+    private Income? dialogIncome;
+    private string? confirmationMessage;
 
     IQueryable<Income> FilteredIncomes
     {
@@ -114,5 +126,23 @@
 
         // Unsubscribe from the event to prevent memory leaks
         FinanceState.OnFinanceAdded -= RefreshGrid;
+    }
+
+    private void DeleteIncome(Income income)
+    {
+        dialogIncome = income;
+        confirmationMessage = $"Are you sure you want to delete this income: {income.Description}?";
+        ConfirmationDialog?.Show();
+    }
+
+    private async Task DeleteIncomeConfirmed(bool confirmed)
+    {
+        var income = ConfirmationDialog?.DialogItem; // Retrieve the income from the dialog
+        if (confirmed && income != null)
+        {
+            using var context = DbFactory.CreateDbContext();
+            context.Incomes.Remove(income);
+            await context.SaveChangesAsync();
+        }
     }
 }
