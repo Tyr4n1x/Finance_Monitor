@@ -12,5 +12,9 @@ namespace Finance_Monitor.Models
 
         [Required]
         public string Category { get; set; } = string.Empty;
+
+        [Required]
+        [RegularExpression("^#(?:[0-9a-fA-F]{3}){1,2}$", ErrorMessage = "Invalid hex color format.")]
+        public string ColorHex { get; set; } = "#006bb7"; // Default color
     }
 }
