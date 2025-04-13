@@ -28,7 +28,13 @@
             </ColumnOptions>
         </PropertyColumn>
         <TemplateColumn Context="expense">
-            @string.Join(", ", expense.Categories)
+            @foreach (var category in expense.Categories)
+            {
+                var color = CategoryColorMap.TryGetValue(category, out var hex) ? hex : "#000000";
+                <span class="badge me-1" style="background-color:@color; color: #ffffff;">
+                    @category
+                </span>
+            }
         </TemplateColumn>
 
         <TemplateColumn Context="expense">
@@ -46,10 +52,10 @@
 </div>
 
 <DialogComponent @ref="ConfirmationDialog"
-                DialogItem=@dialogExpense
-                DialogTitle="Delete Expense"
-                DialogMessage=@confirmationMessage
-                DialogAction="DeleteExpenseConfirmed">
+DialogItem=@dialogExpense
+DialogTitle="Delete Expense"
+DialogMessage=@confirmationMessage
+DialogAction="DeleteExpenseConfirmed">
 </DialogComponent>
 
 @code {
@@ -58,6 +64,7 @@
     private string DescriptionFilter = string.Empty;
     private int? MinAmount;
     private int? MaxAmount;
+    private Dictionary<string, string> CategoryColorMap = new();
 
     private string userId = string.Empty;
 
@@ -118,6 +125,11 @@
 
         // Subscribe to the event
         FinanceState.OnFinanceAdded += RefreshGrid;
+
+        // Create a dictionary for eaasy color mapping of Expense Categories
+        CategoryColorMap = await context.ExpenseCategories
+            .Where(c => c.UserId == userId)
+            .ToDictionaryAsync(c => c.Category, c => c.ColorHex);
     }
 
     public async ValueTask DisposeAsync()
