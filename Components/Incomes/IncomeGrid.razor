@@ -28,7 +28,13 @@
             </ColumnOptions>
         </PropertyColumn>
         <TemplateColumn Context="income">
-            @string.Join(", ", income.Categories)
+            @foreach (var category in income.Categories)
+            {
+                var color = CategoryColorMap.TryGetValue(category, out var hex) ? hex : "#000000";
+                <span class="badge me-1" style="background-color:@color; color: #ffffff;">
+                    @category
+                </span>
+            }
         </TemplateColumn>
 
         <TemplateColumn Context="income">
@@ -58,6 +64,7 @@
     private string DescriptionFilter = string.Empty;
     private int? MinAmount;
     private int? MaxAmount;
+    private Dictionary<string, string> CategoryColorMap = new();
 
     private string userId = string.Empty;
 
@@ -103,7 +110,7 @@
 
     private async Task RefreshGrid()
     {
-        // Trigger a UI update when a new Expense is added
+        // Trigger a UI update when a new Income is added
         await InvokeAsync(StateHasChanged);
     }
 
@@ -118,6 +125,11 @@
 
         // Subscribe to the event
         FinanceState.OnFinanceAdded += RefreshGrid;
+
+        // Create a dictionary for eaasy color mapping of Income Categories
+        CategoryColorMap = await context.IncomeCategories
+            .Where(c => c.UserId == userId)
+            .ToDictionaryAsync(c => c.Category, c => c.ColorHex);
     }
 
     public async ValueTask DisposeAsync()
