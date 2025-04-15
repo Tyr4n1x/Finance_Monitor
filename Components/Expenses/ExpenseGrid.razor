@@ -12,9 +12,15 @@
 
 
 <div class="expense-grid">
-    <QuickGrid Class="table" Items="@FilteredExpenses" Virtualize="true">
-        <PropertyColumn Property="expense => expense.Date" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn="true" />
-        <PropertyColumn Property="expense => expense.Amount" Format="C">
+    <QuickGrid Class="table"
+               Items="@FilteredExpenses"
+               Virtualize="true">
+        <PropertyColumn Property="expense => expense.Date"
+                        Sortable="true"
+                        InitialSortDirection="SortDirection.Descending"
+                        IsDefaultSortColumn="true" />
+        <PropertyColumn Property="expense => expense.Amount"
+                        Format="C">
             <ColumnOptions>
                 <p>Min: <input type="search" @bind="MinAmount" @bind:event="oninput" placeholder="minimum" /> </p>
                 <p>Max: <input type="search" @bind="MaxAmount" @bind:event="oninput" placeholder="maximum" /> </p>
@@ -27,14 +33,30 @@
                 </div>
             </ColumnOptions>
         </PropertyColumn>
-        <TemplateColumn Context="expense">
-            @foreach (var category in expense.Categories)
-            {
-                var color = CategoryColorMap.TryGetValue(category, out var hex) ? hex : "#000000";
-                <span class="badge me-1" style="background-color:@color; color: #ffffff;">
-                    @category
-                </span>
-            }
+        <TemplateColumn Context="expense"
+                        Title="Categories">
+            <ChildContent>
+                @foreach (var category in expense.Categories)
+                {
+                    var color = CategoryColorMap.TryGetValue(category, out var hex) ? hex : "#000000";
+                    <span class="badge me-1" style="background-color:@color; color: #ffffff;">
+                        @category
+                    </span>
+                }
+            </ChildContent>
+            <ColumnOptions>
+                <div class="label-filter-options">
+                    @foreach (var label in CategoryColorMap.Keys)
+                    {
+                        <label class="d-block">
+                            <input type="checkbox"
+                                   @onchange="() => ToggleCategoryFilter(label)"
+                                   checked="@selectedLabels.Contains(label)" />
+                            @label
+                        </label>
+                    }
+                </div>
+            </ColumnOptions>
         </TemplateColumn>
 
         <TemplateColumn Context="expense">
@@ -52,10 +74,10 @@
 </div>
 
 <DialogComponent @ref="ConfirmationDialog"
-DialogItem=@dialogExpense
-DialogTitle="Delete Expense"
-DialogMessage=@confirmationMessage
-DialogAction="DeleteExpenseConfirmed">
+                DialogItem=@dialogExpense
+                DialogTitle="Delete Expense"
+                DialogMessage=@confirmationMessage
+                DialogAction="DeleteExpenseConfirmed">
 </DialogComponent>
 
 @code {
@@ -64,6 +86,8 @@ DialogAction="DeleteExpenseConfirmed">
     private string DescriptionFilter = string.Empty;
     private int? MinAmount;
     private int? MaxAmount;
+    private HashSet<string> selectedLabels = new();
+
     private Dictionary<string, string> CategoryColorMap = new();
 
     private string userId = string.Empty;
@@ -104,6 +128,11 @@ DialogAction="DeleteExpenseConfirmed">
                 result = result.Where(e => e.Description.Contains(DescriptionFilter));
             }
 
+            if (selectedLabels.Any())
+            {
+                result = result.Where(e => e.Categories.Any(c => selectedLabels.Contains(c)));
+            }
+            
             return result;
         }
     }
@@ -112,6 +141,12 @@ DialogAction="DeleteExpenseConfirmed">
     {
         // Trigger a UI update when a new Expense is added
         await InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleCategoryFilter(string category)
+    {
+        if (!selectedLabels.Add(category))
+            selectedLabels.Remove(category);
     }
 
     protected override async Task OnInitializedAsync()
