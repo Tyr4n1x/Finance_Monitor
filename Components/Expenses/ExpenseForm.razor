@@ -2,12 +2,13 @@
 @using Finance_Monitor.Models
 @using Finance_Monitor.Data
 @using Finance_Monitor.Services
+@using Finance_Monitor.Components.Shared
 @inject IDbContextFactory<ExpenseContext> DbFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject FinanceState FinanceState
 
 <div class="expense-form">
-    <EditForm method="post" Model="Expense" OnSubmit="AddExpense" FormName="create" Enhance>
+    <EditForm method="post" Model="Expense" OnValidSubmit="AddExpense" FormName="create" Enhance>
         <DataAnnotationsValidator />
         <div class="mb-3">
             <label for="description" class="form-label">Description:</label>
@@ -26,22 +27,28 @@
         </div>
         <div class="mb-3">
             <label for="categories" class="form-label">Categories:</label>
+            <button type="button" class="btn btn-sm btn-success me-1" @onclick="AddCategory">+</button>
             <RadzenDropDown @bind-Value=@selectedCategories class="form-control"
-                Data=@Categories
-                Name="ExpenseCategories"
-                MaxSelectedLabels="3"
-                SelectedItemsText="categories selected"
-                Multiple=true
-                AllowFiltering="true"
-                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                AllowClear=true
-                Placeholder="Select categories"
-                Chips=true />
+                    Data=@Categories
+                    Name="ExpenseCategories"
+                    MaxSelectedLabels="3"
+                    SelectedItemsText="categories selected"
+                    Multiple=true
+                    AllowFiltering="true"
+                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                    AllowClear=true
+                    Placeholder="Select categories"
+                    Chips=true />
             <ValidationMessage For="() => Expense.Categories" class="text-danger" />
         </div>
         <button type="submit" class="btn btn-primary">Create</button>
     </EditForm>
 </div>
+
+<AddCategoryDialog TItem="ExpenseCategory"
+                    @ref="AddCategoryDialog"
+                    DialogTitle="Add a new Category"
+                    DialogAction="AddCategoryConfirmed" />
 
 @code {
     [SupplyParameterFromForm]
@@ -52,6 +59,8 @@
 
     // Inject AuthenticationStateProvider
     private AuthenticationState authenticationState = default!;
+
+    private AddCategoryDialog<ExpenseCategory>? AddCategoryDialog;
 
     protected override async Task OnInitializedAsync()
     {
@@ -93,6 +102,40 @@
 
         // Notify other components to update
         await FinanceState.NotifyFinanceAdded();
+
+        // Trigger UI refresh
+        StateHasChanged();
+    }
+
+    private void AddCategory()
+    {
+        if (AddCategoryDialog != null)
+        {
+            AddCategoryDialog.Show();
+            AddCategoryDialog.Context.UserId = Expense.UserId;
+        }
+    }
+
+    private async Task AddCategoryConfirmed(bool confirmed)
+    {
+        if (!confirmed || AddCategoryDialog?.Context is not ExpenseCategory newCategory)
+            return;
+
+        // Assign current user ID
+        newCategory.UserId = Expense.UserId;
+
+        using var context = DbFactory.CreateDbContext();
+        context.ExpenseCategories.Add(newCategory);
+        await context.SaveChangesAsync();
+
+        // Refresh the categories list and dropdown
+        Categories = await context.ExpenseCategories
+                                  .Where(c => c.UserId == Expense.UserId)
+                                  .Select(c => c.Category)
+                                  .ToListAsync();
+
+        // Notify other components to update (TODO)
+        
 
         // Trigger UI refresh
         StateHasChanged();
