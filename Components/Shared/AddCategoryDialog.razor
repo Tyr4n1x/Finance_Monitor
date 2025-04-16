@@ -1,0 +1,71 @@
+﻿@using Finance_Monitor.Models
+@typeparam TItem where TItem : class, ICategory, new()
+
+@if (ShowDialog)
+{
+    <div class="modal fade show d-block" id="addCategoryDialog" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@DialogTitle</h5>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@categoryModel" OnValidSubmit="@(() => OnDialogAction(true))">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label>Category Name</label>
+                            <InputText class="form-control" @bind-Value="categoryModel.Category" />
+                            <ValidationMessage For="@(() => categoryModel.Category)" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Color</label>
+                            <InputText type="color" class="form-control form-control-color"
+                                       @bind-Value="categoryModel.ColorHex" />
+                            <ValidationMessage For="@(() => categoryModel.ColorHex)" />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @onclick="() => OnDialogAction(false)">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                Add
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool ShowDialog { get; set; }
+
+    public TItem Context => categoryModel;
+
+    private TItem categoryModel = default!;
+
+    [Parameter]
+    public string DialogTitle { get; set; } = "Add a Category";
+
+    [Parameter]
+    public EventCallback<bool> DialogAction { get; set; }
+
+    public void Show()
+    {
+        categoryModel = Activator.CreateInstance<TItem>()!;
+        ShowDialog = true;
+        StateHasChanged();
+    }
+
+    private async Task OnDialogAction(bool value)
+    {
+        ShowDialog = false;
+        await DialogAction.InvokeAsync(value);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await OnDialogAction(true);
+    }
+}
