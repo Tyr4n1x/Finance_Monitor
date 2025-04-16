@@ -2,7 +2,7 @@
 
 namespace Finance_Monitor.Models
 {
-    public class IncomeCategory
+    public class IncomeCategory : ICategory
     {
         [Required]
         public int Id { get; set; }
