@@ -143,6 +143,15 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    private async Task RefreshCategories()
+    {
+        CategoryColorMap = await context.IncomeCategories
+            .Where(c => c.UserId == userId)
+            .ToDictionaryAsync(c => c.Category, c => c.ColorHex);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
     private void ToggleCategoryFilter(string category)
     {
         if (!selectedLabels.Add(category))
@@ -158,8 +167,11 @@
 
         context = DbFactory.CreateDbContext();
 
-        // Subscribe to the event
+        // Subscribe to the event of adding a Finance (Expense/Income)
         FinanceState.OnFinanceAdded += RefreshGrid;
+
+        // Subscribe to the event of adding a Category
+        FinanceState.OnCategoryAdded += RefreshCategories;
 
         // Create a dictionary for eaasy color mapping of Income Categories
         CategoryColorMap = await context.IncomeCategories
@@ -171,8 +183,9 @@
     {
         await context.DisposeAsync();
 
-        // Unsubscribe from the event to prevent memory leaks
+        // Unsubscribe from the events to prevent memory leaks
         FinanceState.OnFinanceAdded -= RefreshGrid;
+        FinanceState.OnCategoryAdded -= RefreshCategories;
     }
 
     private void DeleteIncome(Income income)
