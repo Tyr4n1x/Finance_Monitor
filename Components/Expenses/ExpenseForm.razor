@@ -134,8 +134,8 @@
                                   .Select(c => c.Category)
                                   .ToListAsync();
 
-        // Notify other components to update (TODO)
-        
+        // Notify other components to update
+        await FinanceState.NotifyCategoryAdded();
 
         // Trigger UI refresh
         StateHasChanged();
