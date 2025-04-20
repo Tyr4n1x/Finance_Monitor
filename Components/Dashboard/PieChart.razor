@@ -19,7 +19,11 @@
                 <TooltipTemplate Context="item">
                     <div><strong>@item.Category:</strong> @FormatAsEUR(item.Amount)</div>
                 </TooltipTemplate>
+                <ChildContent>
+                    <RadzenSeriesDataLabels Visible="true" />
+                </ChildContent>
         </RadzenPieSeries>
+            <RadzenValueAxis Formatter="@(value => FormatAsPercentage(value))" />
     </RadzenChart>
     }
 </div>
@@ -35,9 +39,36 @@
 
     private string userId = string.Empty;
 
-    string FormatAsEUR(decimal value)
+    private string FormatAsEUR(decimal value)
     {
         return value.ToString("C2", CultureInfo.CreateSpecificCulture("nl-BE"));
+    }
+
+    string FormatAsPercentage(object value)
+    {
+        try
+        {
+            decimal amount = value switch
+            {
+                decimal d => d,
+                double d => Convert.ToDecimal(d),
+                float f => Convert.ToDecimal(f),
+                int i => i,
+                long l => l,
+                _ => throw new InvalidCastException("Unsupported type for percentage formatting.")
+            };
+
+            decimal total = MonthData.Data.Sum(x => x.Amount);
+            if (total == 0)
+                return "0%";
+
+            decimal percentage = (amount / total) * 100;
+            return $"{Math.Round(percentage)}%";
+        }
+        catch
+        {
+            return "0%";
+        }
     }
 
     protected override async Task OnInitializedAsync()
