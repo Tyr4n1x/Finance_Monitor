@@ -1,4 +1,5 @@
-﻿@using Finance_Monitor.Services
+﻿@using Finance_Monitor.Models
+@using Finance_Monitor.Services
 @using System.Globalization
 @inject IDataService dataService;
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -30,10 +31,10 @@
 
 @code {
     [Parameter, EditorRequired]
-    public string ChartType { get; set; } = "expenses";  // "incomes" or "expenses"
+    public string ChartType { get; set; } = string.Empty;  // "incomes" or "expenses"
 
-    [Parameter]
     public ICollection<string>? Colors { get; set; }
+    private List<ICategory> userCategories = new List<ICategory>();
 
     public MonthlyData MonthData { get; set; } = new MonthlyData();
 
@@ -81,15 +82,29 @@
         if (ChartType == "incomes")
         {
             MonthData = await dataService.LoadCurrentMonthIncomes(userId) ?? new MonthlyData();
+            // Load all user-defined categories
+            userCategories = await dataService.GetIncomeCategories(userId);
         }
         else if (ChartType == "expenses")
         {
             MonthData = await dataService.LoadCurrentMonthExpenses(userId) ?? new MonthlyData();
+            // Load all user-defined categories
+            userCategories = await dataService.GetExpenseCategories(userId);
         }
         else
         {
             throw new InvalidOperationException("Invalid ChartType");
         }
+
+        // Create a dictionary for easier color lookup
+        var categoryColorMap = userCategories.ToDictionary(c => c.Category, c => c.ColorHex);
+
+        // Assign colors to match the order of the MonthData
+        Colors = MonthData.Data
+            .Select(item => categoryColorMap.TryGetValue(item.Category, out var color)
+                ? color
+                : "#CCCCCC")
+            .ToList();
 
         await InvokeAsync(StateHasChanged);
     }
