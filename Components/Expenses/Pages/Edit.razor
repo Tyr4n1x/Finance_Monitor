@@ -3,9 +3,12 @@
 @using Microsoft.EntityFrameworkCore
 @using Finance_Monitor.Data
 @using Finance_Monitor.Models
+@using Finance_Monitor.Services
+@using Finance_Monitor.Components.Shared
 @inject IDbContextFactory<ExpenseContext> DbFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@inject FinanceState FinanceState
 
 <PageTitle>Edit this Expense</PageTitle>
 
@@ -40,6 +43,7 @@ else
                 </div>
                 <div class="mb-3">
                     <label for="categories" class="form-label">Categories:</label>
+                    <button type="button" class="btn btn-sm btn-success me-1" @onclick="AddCategory">+</button>
                     <RadzenDropDown @bind-Value="Expense.Categories" class="form-control"
                                     Data=@Categories
                                     Name="ExpenseCategories"
@@ -59,6 +63,11 @@ else
     </div>
 }
 
+<AddCategoryDialog TItem="ExpenseCategory"
+                    @ref="AddCategoryDialog"
+                    DialogTitle="Add a new Category"
+                    DialogAction="AddCategoryConfirmed" />
+
 <div>
     <a href="/expenses">Back to List</a>
 </div>
@@ -75,6 +84,8 @@ else
 
     // Inject AuthenticationStateProvider
     private AuthenticationState authenticationState = default!;
+
+    private AddCategoryDialog<ExpenseCategory>? AddCategoryDialog;
 
     protected override async Task OnInitializedAsync()
     {
@@ -128,5 +139,39 @@ else
     {
         using var context = DbFactory.CreateDbContext();
         return context.Expenses.Any(e => e.Id == id);
+    }
+
+    private void AddCategory()
+    {
+        if (AddCategoryDialog != null)
+        {
+            AddCategoryDialog.Show();
+            AddCategoryDialog.Context.UserId = Expense.UserId;
+        }
+    }
+
+    private async Task AddCategoryConfirmed(bool confirmed)
+    {
+        if (!confirmed || AddCategoryDialog?.Context is not ExpenseCategory newCategory)
+            return;
+
+        // Assign current user ID
+        newCategory.UserId = Expense.UserId;
+
+        using var context = DbFactory.CreateDbContext();
+        context.ExpenseCategories.Add(newCategory);
+        await context.SaveChangesAsync();
+
+        // Refresh the categories list and dropdown
+        Categories = await context.ExpenseCategories
+                                  .Where(c => c.UserId == Expense.UserId)
+                                  .Select(c => c.Category)
+                                  .ToListAsync();
+
+        // Notify other components to update
+        await FinanceState.NotifyCategoryAdded();
+
+        // Trigger UI refresh
+        StateHasChanged();
     }
 }
