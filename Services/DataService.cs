@@ -1,5 +1,6 @@
 ﻿using Finance_Monitor.Components.Administration;
 using Finance_Monitor.Data;
+using Finance_Monitor.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Finance_Monitor.Services
@@ -162,6 +163,29 @@ namespace Finance_Monitor.Services
         {
             return await LoadMonthIncomes(currentYear, currentMonth, userId);
         }
+
+        public async Task<List<ICategory>> GetExpenseCategories(string userId)
+        {
+            using var context = expenseDbFactory.CreateDbContext();
+
+            var categories = await context.ExpenseCategories
+                .Where(c => c.UserId == userId)
+                .ToListAsync<ICategory>();
+
+            return categories;
+        }
+
+        public async Task<List<ICategory>> GetIncomeCategories(string userId)
+        {
+            using var context = incomeDbFactory.CreateDbContext();
+
+            var categories = await context.IncomeCategories
+                .Where(c => c.UserId == userId)
+                .ToListAsync<ICategory>();
+
+            return categories;
+        }
+
 
         private static string MonthToString(int month, int year)
         {
