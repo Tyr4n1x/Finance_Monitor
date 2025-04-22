@@ -34,7 +34,7 @@
             <AuthorizeView>
                 <Authorized>
                     <div class="card-body">
-                        <PieChart ChartType="incomes" Colors="@colors"> </PieChart>
+                        <PieChart ChartType="incomes"> </PieChart>
                     </div>
                 </Authorized>
                 <NotAuthorized>
@@ -53,7 +53,7 @@
             <AuthorizeView>
                 <Authorized>
                     <div class="card-body">
-                        <PieChart ChartType="expenses" Colors="@colors"> </PieChart>
+                        <PieChart ChartType="expenses"> </PieChart>
                     </div>
                 </Authorized>
                 <NotAuthorized>
@@ -70,14 +70,6 @@
 
     private static int currentYear = DateTime.Today.Year;
     private static int currentMonth = DateTime.Today.Month;
-
-    private ICollection<string> colors = new List<string>() {   "#FBC687", /* Warm Peach */
-                                                                "#F4F7C5", /* Soft Yellow */
-                                                                "#93ABD3", /* Cool Blue */
-                                                                "#E27396", /* Vibrant Pink */
-                                                                "#3A6351", /* Deep Green */
-                                                                "#6B4226"  /* Rich Brown */
-    };
 
     private static string MonthToString(int month, int year)
     {
