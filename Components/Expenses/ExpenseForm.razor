@@ -54,6 +54,8 @@
     [SupplyParameterFromForm]
     private Expense Expense { get; set; } = new() { Date = DateOnly.FromDateTime(DateTime.Today) };
 
+    private string userId = string.Empty;
+
     private List<string> selectedCategories = new List<string>();
     private List<string> Categories = new List<string>();
 
@@ -67,7 +69,8 @@
         // Get the current user's UserId
         authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authenticationState.User;
-        string? userId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+        userId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value
+                    ?? throw new InvalidOperationException("Can't find user ID.");
 
         // Set the current user's UserId in the Expense
         if (!string.IsNullOrEmpty(userId))
@@ -97,8 +100,13 @@
         await context.SaveChangesAsync();
 
         // Reset the form by creating a new Expense object
-        Expense = new Expense() { Date = DateOnly.FromDateTime(DateTime.Today) };
-        selectedCategories = []; // Clear selected categories
+        Expense = new Expense() {
+            Date = DateOnly.FromDateTime(DateTime.Today),
+            UserId = userId
+            };
+
+        // Clear selected Categories
+        selectedCategories.Clear();
 
         // Notify other components to update
         await FinanceState.NotifyFinanceAdded();
