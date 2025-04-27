@@ -5,10 +5,8 @@
 @using Finance_Monitor.Data
 @using Microsoft.AspNetCore.Identity;
 
-@implements IAsyncDisposable
-
-@inject IDbContextFactory<ApplicationUserContext> DbFactory
 @inject UserManager<ApplicationUser> UserManager
+@inject IDbContextFactory<ApplicationUserContext> DbFactory
 
 <div class="user-grid">
     <QuickGrid Class="table" Items="@FilteredUsers" Virtualize="true">
@@ -42,7 +40,7 @@
         </PropertyColumn>
 
         <TemplateColumn Context="User">
-            <button class="btn btn-primary" @onclick="() => EditUser(User.Id)">Edit</button>
+            <button class="btn btn-primary" @onclick="() => EditUser(User)">Edit</button>
             <button class="btn btn-danger" @onclick="() => DeleteUser(User)">Delete</button>
         </TemplateColumn>
     </QuickGrid>
@@ -55,8 +53,14 @@
                 DialogAction="DeleteUserConfirmed">
 </DialogComponent>
 
+<EditUserDialog TKey="ApplicationUser"
+                @ref="EditDialog"
+                AvailableRoles="AvailableRoles"
+                DialogAction="EditUserConfirmed" />
+
 @code {
-    private ApplicationUserContext context = default!;
+    private List<ApplicationUser> Users = new();
+    private List<string> AvailableRoles = new();
 
     private string UserNameFilter = string.Empty;
     private string EmailFilter = string.Empty;
@@ -67,11 +71,14 @@
     private ApplicationUser? dialogUser;
     private string? confirmationMessage;
 
+    private EditUserDialog<ApplicationUser> EditDialog;
+    private string? editUserId;
+
     IQueryable<ApplicationUser> FilteredUsers
     {
         get
         {
-            var result = context.Users.AsQueryable();
+            var result = Users.AsQueryable();
 
             if (!string.IsNullOrEmpty(UserNameFilter))
             {
@@ -101,17 +108,54 @@
         }
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        context = DbFactory.CreateDbContext();
+      // grab a brand-new context instance
+      await using var context = await DbFactory.CreateDbContextAsync();
+
+      // 1) Load roles
+      AvailableRoles = await context.Roles
+                                .Select(r => r.Name!)
+                                .ToListAsync();
+
+      // 2) Load users
+      Users = await context.Users
+                       .ToListAsync();
     }
 
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
-
-    private void EditUser(string userId)
+    private async void EditUser(ApplicationUser user)
     {
-        // Implement edit logic here
+        editUserId = user.Id;
+        var userRoles = await UserManager.GetRolesAsync(user);
+        var currentRole = userRoles.FirstOrDefault() ?? "";
+        EditDialog.Show(currentRole);
     }
+
+    private async Task EditUserConfirmed((bool confirmed, string selectedRole) args)
+    {
+        if (!args.confirmed || editUserId == null)
+            return;
+
+        // 1) fetch a brand-new user instance by ID
+        var user = await UserManager.FindByIdAsync(editUserId);
+        if (user == null) return;
+
+        // 2) remove **all** existing roles, then add the newly chosen one
+        var currentRoles = await UserManager.GetRolesAsync(user);
+            if (currentRoles.Any())
+                {
+                    await UserManager.RemoveFromRolesAsync(user, currentRoles);
+                }
+            if (!string.IsNullOrEmpty(args.selectedRole))
+                {
+                    await UserManager.AddToRoleAsync(user, args.selectedRole);
+                }
+
+        // 3) reload & refresh
+        Users = await UserManager.Users.ToListAsync();
+        StateHasChanged();
+    }
+
 
     private void DeleteUser(ApplicationUser user)
     {
@@ -128,8 +172,9 @@
             // Delete the user
             await UserManager.DeleteAsync(user);
 
+            await using var context = await DbFactory.CreateDbContextAsync();
             // Refresh the data by reloading the context
-            context = await DbFactory.CreateDbContextAsync();
+            Users = await context.Users.ToListAsync();
 
             // Trigger UI refresh
             StateHasChanged();
