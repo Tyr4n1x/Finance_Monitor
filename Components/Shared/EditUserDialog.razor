@@ -1,0 +1,58 @@
+﻿@typeparam TKey
+
+@if (ShowDialog)
+{
+    <div class="modal fade show d-block" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit User Role</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="roleSelect" class="form-label">Role</label>
+                        <select id="roleSelect"
+                                class="form-select"
+                                @bind="SelectedRole">
+                            @foreach (var role in AvailableRoles)
+                            {
+                                <option value="@role">@role</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="() => Confirm(false)">Cancel</button>
+                    <button class="btn btn-primary" @onclick="() => Confirm(true)">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    bool ShowDialog { get; set; }
+    string SelectedRole { get; set; } = string.Empty;
+
+    /// All possible roles to choose from
+    [Parameter]
+    public List<string> AvailableRoles { get; set; } = new();
+
+    /// Callback to parent: (confirmed?, selectedRole)
+    [Parameter]
+    public EventCallback<(bool Confirmed, string SelectedRole)> DialogAction { get; set; }
+
+    /// Opens the dialog, pre-selecting the currentRole
+    public void Show(string currentRole)
+    {
+        SelectedRole = currentRole;
+        ShowDialog = true;
+        StateHasChanged();
+    }
+
+    async Task Confirm(bool confirmed)
+    {
+        ShowDialog = false;
+        await DialogAction.InvokeAsync((confirmed, SelectedRole));
+    }
+}
