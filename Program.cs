@@ -60,6 +60,9 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.User.RequireUniqueEmail = true;
 });
 
+// Loads email sender settings from configuration into AuthMessageSenderOptions
+builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration);
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -75,7 +78,8 @@ builder.Services.AddScoped<IdentityRedirectManager>();
 
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+// Change the email sender implementation to the EmailSender
+builder.Services.AddSingleton<IEmailSender<ApplicationUser>, EmailSender>();
 
 // Add services for data processing to the container.
 builder.Services.AddScoped<IDataService, DataService>();
