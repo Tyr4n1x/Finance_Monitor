@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>c9646620-de16-420e-8966-4fb4d9959648</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +22,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
     <PackageReference Include="Radzen.Blazor" Version="6.4.0" />
+    <PackageReference Include="SendGrid" Version="9.29.3" />
   </ItemGroup>
 
 </Project>
