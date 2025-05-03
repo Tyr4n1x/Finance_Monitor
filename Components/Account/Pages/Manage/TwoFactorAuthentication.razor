@@ -13,7 +13,7 @@
 <PageTitle>Two-factor authentication (2FA)</PageTitle>
 
 <StatusMessage />
-<h3>Two-factor authentication (2FA)</h3>
+
 @if (canTrack)
 {
     if (is2faEnabled)
@@ -40,28 +40,44 @@
             </div>
         }
 
-        if (isMachineRemembered)
-        {
-            <form style="display: inline-block" @formname="forget-browser" @onsubmit="OnSubmitForgetBrowserAsync" method="post">
-                <AntiforgeryToken />
-                <button type="submit" class="btn btn-primary">Forget this browser</button>
-            </form>
-        }
+        <div class="card my-4">
+            <div class="card-header">
+                Two-factor (2FA) authentication settings
+            </div>
+            <div class="card-body">
+                <div class="d-flex gap-2 flex-wrap">
+                    @if (isMachineRemembered)
+                    {
+                        <form style="display: inline-block" @formname="forget-browser" @onsubmit="OnSubmitForgetBrowserAsync" method="post">
+                            <AntiforgeryToken />
+                            <button type="submit" class="btn btn-primary">Forget this browser</button>
+                        </form>
+                    }
 
-        <a href="Account/Manage/Disable2fa" class="btn btn-primary">Disable 2FA</a>
-        <a href="Account/Manage/GenerateRecoveryCodes" class="btn btn-primary">Reset recovery codes</a>
+                    <a href="Account/Manage/Disable2fa" class="btn btn-primary">Disable 2FA</a>
+                    <a href="Account/Manage/GenerateRecoveryCodes" class="btn btn-primary">Reset recovery codes</a>
+                </div>
+            </div>
+        </div>
     }
 
-    <h4>Authenticator app</h4>
-    @if (!hasAuthenticator)
-    {
-        <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary">Add authenticator app</a>
-    }
-    else
-    {
-        <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary">Set up authenticator app</a>
-        <a href="Account/Manage/ResetAuthenticator" class="btn btn-primary">Reset authenticator app</a>
-    }
+    <div class="card">
+        <div class="card-header">
+            Authenticator app
+        </div>
+        <div class="card-body">
+            <div class="d-flex gap-2 flex-wrap">
+                @if (!hasAuthenticator)
+                {
+                    <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary">Add authenticator app</a>
+                }
+                else
+                {
+                    <a href="Account/Manage/ResetAuthenticator" class="btn btn-primary">Reset authenticator app</a>
+                }
+            </div>
+        </div>
+    </div>
 }
 else
 {
@@ -96,7 +112,7 @@ else
         await SignInManager.ForgetTwoFactorClientAsync();
 
         RedirectManager.RedirectToCurrentPageWithStatus(
-            "The current browser has been forgotten. When you login again from this browser you will be prompted for your 2fa code.",
+            "The current browser has been forgotten. When you login again from this browser you will be prompted for your 2FA code.",
             HttpContext);
     }
 }
