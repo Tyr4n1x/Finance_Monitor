@@ -10,6 +10,8 @@
 @inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<DeletePersonalData> Logger
+@inject ExpenseContext ExpenseContext
+@inject IncomeContext IncomeContext
 
 <PageTitle>Delete Personal Data</PageTitle>
 
@@ -63,6 +65,8 @@
             return;
         }
 
+        await DeleteUserDataAsync(user.Id);
+
         var result = await UserManager.DeleteAsync(user);
         if (!result.Succeeded)
         {
@@ -72,9 +76,21 @@
         await SignInManager.SignOutAsync();
 
         var userId = await UserManager.GetUserIdAsync(user);
+        Logger.LogInformation("All data of User with ID '{UserId}' have been succesfully deleted.", userId);
         Logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
 
         RedirectManager.RedirectToCurrentPage();
+    }
+
+    private async Task DeleteUserDataAsync(string userId)
+    {
+        ExpenseContext.Expenses.RemoveRange(ExpenseContext.Expenses.Where(e => e.UserId == userId));
+        ExpenseContext.ExpenseCategories.RemoveRange(ExpenseContext.ExpenseCategories.Where(c => c.UserId == userId));
+        IncomeContext.Incomes.RemoveRange(IncomeContext.Incomes.Where(i => i.UserId == userId));
+        IncomeContext.IncomeCategories.RemoveRange(IncomeContext.IncomeCategories.Where(c => c.UserId == userId));
+
+        await ExpenseContext.SaveChangesAsync();
+        await IncomeContext.SaveChangesAsync();
     }
 
     private sealed class InputModel
