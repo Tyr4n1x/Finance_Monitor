@@ -9,6 +9,7 @@ using Radzen;
 using Finance_Monitor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var config = builder.Configuration;
 
 // Configures the DbContextFactory for the ApplicationUserContext with a SQL Server connection string from the app settings.
 builder.Services.AddDbContextFactory<ApplicationUserContext>(options =>
@@ -45,7 +46,17 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = IdentityConstants.ApplicationScheme;
     options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-}).AddIdentityCookies();
+})
+    .AddIdentityCookies();
+
+// Add the external authentication scheme for Google OpenID Connect
+builder.Services.AddAuthentication()
+   .AddGoogleOpenIdConnect(options =>
+   {
+       IConfigurationSection googleAuthNSection = config.GetSection("Authentication:Google");
+       options.ClientId = googleAuthNSection["ClientId"];
+       options.ClientSecret = googleAuthNSection["ClientSecret"];
+   });
 
 // Configures Identity with required account confirmation, EF Core stores, sign-in manager, and token providers.
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
