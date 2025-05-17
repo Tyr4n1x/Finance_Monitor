@@ -1,0 +1,28 @@
+﻿.google-signin-btn {
+    width: 72px;
+    height: 72px;
+    border: none;
+    background-color: white;
+    background-image: url('https://developers.google.com/identity/images/g-logo.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 48px 48px;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+    outline: none;
+    box-shadow: 0 0 0 1px #ccc;
+    transition: box-shadow 0.2s, filter 0.2s;
+}
+
+    .google-signin-btn:hover,
+    .google-signin-btn:focus {
+        box-shadow: 0 0 0 2px #4285F4;
+        filter: brightness(0.95);
+        outline: none;
+    }
+
+    .google-signin-btn:focus-visible {
+        outline: 2px solid #4285F4;
+        outline-offset: 2px;
+    }

@@ -24,7 +24,16 @@ else
             <p>
                 @foreach (var provider in externalLogins)
                 {
-                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                    if (provider.Name.Contains("Google", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <button type="submit" class="google-signin-btn" name="provider" value="@provider.Name" title="Sign in with Google" aria-label="Sign in with Google"></button>
+                    }
+                    else
+                    {
+                        <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                            @provider.DisplayName
+                        </button>
+                    }
                 }
             </p>
         </div>
